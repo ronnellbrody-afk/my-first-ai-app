@@ -1,1 +1,68 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Task Tracker</title>
+<style>
+body{font-family:Arial;background:#12151b;color:white;margin:0;padding:24px}
+main{max-width:500px;margin:auto}
+h1{font-size:28px}
+p{color:#aab1bf}
+form{display:flex;gap:8px}
+input{flex:1;min-width:0;padding:14px;border:1px solid #444;border-radius:10px;background:#242936;color:white}
+button{padding:12px;border:0;border-radius:10px;background:#8b9cff;color:#10121a;font-weight:bold}
+li{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#242936;margin:10px 0;padding:14px;border-radius:10px}
+li span{flex:1;overflow-wrap:anywhere}
+.done{text-decoration:line-through;color:#999}
+.actions{display:flex;gap:6px}
+</style>
+</head>
+<body>
+<main>
+<h1>My Task Tracker</h1>
+<p>My first app built with AI.</p>
+<form id="form">
+<input id="task" placeholder="Enter a task" required maxlength="120">
+<button>Add</button>
+</form>
+<ul id="list" style="padding:0;list-style:none"></ul>
+</main>
+<script>
+const input=document.getElementById('task');
+const list=document.getElementById('list');
+let tasks=JSON.parse(localStorage.getItem('tasks')||'[]');
+function save(){localStorage.setItem('tasks',JSON.stringify(tasks));render();}
+function render(){
+list.replaceChildren();
+tasks.forEach((task,i)=>{
+const li=document.createElement('li');
+const span=document.createElement('span');
+span.textContent=task.text;
+if(task.done)span.className='done';
+const actions=document.createElement('div');
+actions.className='actions';
+const done=document.createElement('button');
+done.textContent=task.done?'Undo':'Done';
+done.onclick=()=>{tasks[i].done=!tasks[i].done;save();};
+const del=document.createElement('button');
+del.textContent='×';
+del.setAttribute('aria-label','Delete task');
+del.onclick=()=>{tasks.splice(i,1);save();};
+actions.append(done,del);
+li.append(span,actions);
+list.append(li);
+});
+}
+document.getElementById('form').onsubmit=e=>{
+e.preventDefault();
+const value=input.value.trim();
+if(!value)return;
+tasks.push({text:value,done:false});
+input.value='';
+save();
+};
+render();
+</script>
+</body>
+</html>
