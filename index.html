@@ -50,7 +50,152 @@ button.secondary{background:#3a4356;color:white}button.danger{background:#503039
 </form>
 <section class="panel"><label for="newCategory">Create your own category</label><div class="row"><input id="newCategory" maxlength="35" placeholder="e.g. Finance"><button id="addCategory" type="button">Create</button></div><p class="hint">Categories stay saved in this browser.</p></section>
 <section aria-label="Task list"><div class="filters"><h2>My tasks</h2><select id="filter" aria-label="Filter tasks by category"></select></div><p class="muted" id="count"></p><div class="sortrow"><label for="sort">Sort tasks</label><select id="sort"><option value="added">Date added</option><option value="due">Due date (soonest first)</option><option value="priority">Priority (highest first)</option></select></div><div id="tasks"></div></section>
+
+<section class="panel" aria-label="Backup and restore">
+  <h2>Backup & Restore</h2>
+  <p class="muted">Save your tasks and categories so you can recover them later.</p>
+
+  <div class="actions">
+    <button type="button" id="exportBackup">
+      Export backup
+    </button>
+    <button type="button" class="secondary" id="restoreBackup">
+      Restore backup
+    </button>
+  </div>
+
+  <input type="file" id="backupFile"
+    accept=".json,application/json" hidden>
+
+  <p class="hint" id="backupStatus" role="status">
+    Your tasks are currently stored in this browser.
+  </p>
+</section>
 </main>
+
+// VERSION 5 - BACKUP AND RESTORE
+
+el('exportBackup').onclick = () => {
+  const backup = {
+    app: 'my-first-ai-app',
+    version: 5,
+    exportedAt: new Date().toISOString(),
+    tasks: tasks,
+    categories: categories
+  };
+
+  const json = JSON.stringify(backup, null, 2);
+  const blob = new Blob([json], {
+    type: 'application/json'
+  });
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+
+  link.href = url;
+  link.download =
+    'task-tracker-backup-' + todayLocal() + '.json';
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+  el('backupStatus').textContent =
+    'Backup prepared. Check your Downloads folder.';
+};
+
+el('restoreBackup').onclick = () => {
+  el('backupFile').value = '';
+  el('backupFile').click();
+};
+
+el('backupFile').onchange = async event => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  try {
+    if (file.size > 5 * 1024 * 1024) {
+      throw new Error('Backup file is too large.');
+    }
+
+    const backup = JSON.parse(await file.text());
+
+    if (
+      !backup ||
+      backup.app !== 'my-first-ai-app' ||
+      !Array.isArray(backup.tasks) ||
+      !Array.isArray(backup.categories)
+    ) {
+      throw new Error('This is not a valid task tracker backup.');
+    }
+
+    if (
+      !backup.tasks.every(t =>
+        t &&
+        typeof t.text === 'string' &&
+        typeof t.done === 'boolean' &&
+        typeof t.category === 'string' &&
+        ['High', 'Medium', 'Low'].includes(t.priority) &&
+        typeof t.dueDate === 'string' &&
+        (t.dueDate === '' ||
+          /^\d{4}-\d{2}-\d{2}$/.test(t.dueDate))
+      ) ||
+      !backup.categories.every(c =>
+        typeof c === 'string' &&
+        c.trim().length > 0
+      )
+    ) {
+      throw new Error('The backup contains invalid task data.');
+    }
+
+    const restoredTasks = backup.tasks.map(t => ({
+      text: t.text,
+      done: t.done,
+      category: t.category,
+      priority: t.priority,
+      dueDate: t.dueDate
+    }));
+
+    const restoredCategories = [...new Set(
+      backup.categories.map(c => c.trim())
+    )];
+
+    for (const t of restoredTasks) {
+      if (!restoredCategories.includes(t.category)) {
+        restoredCategories.push(t.category);
+      }
+    }
+
+    if (!restoredCategories.length) {
+      restoredCategories.push('General');
+    }
+
+    const confirmed = confirm(
+      'Restore ' + restoredTasks.length +
+      ' tasks? This will replace your current tasks and categories.'
+    );
+
+    if (!confirmed) return;
+
+    tasks = restoredTasks;
+    categories = restoredCategories;
+
+    resetForm();
+    save();
+    renderCategories();
+    renderAll();
+
+    el('backupStatus').textContent =
+      'Backup restored successfully.';
+
+    alert('Your backup has been restored!');
+
+  } catch (error) {
+    alert('Restore failed: ' + error.message);
+  }
+};
 <script>
 'use strict';
 const KEY='tasks',CATEGORY_KEY='taskCategoriesV2';
