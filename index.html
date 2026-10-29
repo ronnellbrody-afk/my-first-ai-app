@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>My Task Tracker</title>
+<title>My Task Tracker — V6</title>
 <style>
 :root{color-scheme:dark;font-family:Arial,sans-serif}*{box-sizing:border-box}
 body{margin:0;background:#12151b;color:#f7f8fc;padding:22px 16px}main{max-width:650px;margin:auto}
@@ -22,7 +22,7 @@ button.secondary{background:#3a4356;color:white}button.danger{background:#503039
 .meta,.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.chip{border-radius:20px;padding:5px 9px;background:#353e51;font-size:12px}.high{background:#673840}.medium{background:#5b4a2b}.low{background:#285143}.overdue{background:#74343e}.today{background:#57508a}.due{background:#304b68}.overdue-card{border:1px solid #a34c5b}
 .filters,.sortrow{display:flex;align-items:center;justify-content:space-between;gap:10px}.filters select{max-width:55%}.sortrow select{flex:1}.sortrow label{white-space:nowrap;margin:0}
 .hint{font-size:12px;line-height:1.5}.category-line{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #363e4d}
-@media(max-width:360px){.grid{grid-template-columns:1fr}.filters{align-items:flex-start;flex-direction:column}.filters select{max-width:100%}}
+.reminder-item{padding:12px 0;border-bottom:1px solid #363e4d}.reminder-item:last-child{border-bottom:0}.reminder-top{display:flex;justify-content:space-between;gap:10px;align-items:center}.reminder-top strong{overflow-wrap:anywhere}.reminder-item p{margin:5px 0 8px;font-size:13px}.calendar-btn{font-size:13px;display:inline-block;text-decoration:none;border-radius:8px;background:#91a0ff;color:#10121a;font-weight:700;padding:9px 11px}.reminder-count{font-size:14px;color:#d5d9e3}.reminder-group{margin-top:14px}.reminder-group h3{font-size:16px;margin:10px 0 4px}@media(max-width:360px){.grid{grid-template-columns:1fr}.filters{align-items:flex-start;flex-direction:column}.filters select{max-width:100%}}
 </style>
 </head>
 <body><main>
@@ -37,6 +37,13 @@ button.secondary{background:#3a4356;color:white}button.danger{background:#503039
 </div>
 <p>Task completion</p><div class="progress"><div id="progressBar"></div></div>
 <h3>Tasks by category</h3><div id="categoryStats"></div>
+</section>
+<section class="panel" aria-label="Reminder centre">
+<h2>Reminder Centre</h2>
+<p class="muted">Upcoming deadlines from your outstanding tasks. Add them to Google Calendar to use your phone’s calendar reminders.</p>
+<div id="reminderSummary" class="reminder-count"></div>
+<div id="reminderList"></div>
+<p class="hint">Calendar events are added only when you confirm in Google Calendar. Set a notification in Calendar if one isn't already enabled. This website does not send background notifications.</p>
 </section>
 <form id="taskForm">
 <h2 id="formHeading">Add a task</h2>
@@ -71,7 +78,29 @@ function renderDashboard(){const today=todayLocal(),done=tasks.filter(t=>t.done)
 function resetForm(){editing=-1;el('taskForm').reset();el('formHeading').textContent='Add a task';el('submitTask').textContent='Add task';el('cancelEdit').hidden=true}
 function startEdit(index){const t=tasks[index];editing=index;el('taskText').value=t.text;el('category').value=t.category;el('priority').value=t.priority;el('dueDate').value=t.dueDate;el('formHeading').textContent='Edit task';el('submitTask').textContent='Save changes';el('cancelEdit').hidden=false;el('taskForm').scrollIntoView({behavior:'smooth',block:'start'});el('taskText').focus({preventScroll:true})}
 function renderTasks(){const filter=el('filter').value,sort=el('sort').value,today=todayLocal();const visible=tasks.map((task,index)=>({task,index})).filter(({task})=>filter==='All categories'||task.category===filter);if(sort==='due')visible.sort((a,b)=>(a.task.done-b.task.done)||(a.task.dueDate||'9999-12-31').localeCompare(b.task.dueDate||'9999-12-31')||(a.index-b.index));if(sort==='priority'){const rank={High:0,Medium:1,Low:2};visible.sort((a,b)=>(a.task.done-b.task.done)||(rank[a.task.priority]-rank[b.task.priority])||(a.index-b.index))}el('tasks').replaceChildren();const overdue=tasks.filter(t=>!t.done&&t.dueDate&&t.dueDate<today).length;el('count').textContent=`${tasks.filter(t=>!t.done).length} outstanding · ${tasks.filter(t=>t.done).length} completed · ${overdue} overdue`;for(const {task,index} of visible){const isOverdue=!task.done&&task.dueDate&&task.dueDate<today;const card=document.createElement('article');card.className='task'+(task.done?' done':'')+(isOverdue?' overdue-card':'');const head=document.createElement('div');head.className='task-head';const check=document.createElement('input');check.type='checkbox';check.checked=task.done;check.setAttribute('aria-label','Complete '+task.text);check.onchange=()=>{tasks[index].done=check.checked;save();renderAll()};const name=document.createElement('span');name.className='task-title';name.textContent=task.text;head.append(check,name);const meta=document.createElement('div');meta.className='meta';const cat=document.createElement('span');cat.className='chip';cat.textContent=task.category;const priority=document.createElement('span');priority.className='chip '+task.priority.toLowerCase();priority.textContent=task.priority+' priority';meta.append(cat,priority);if(task.dueDate){const date=document.createElement('span');const status=task.done?'Due':isOverdue?'Overdue':task.dueDate===today?'Due today':'Due';date.className='chip '+(isOverdue?'overdue':task.dueDate===today&&!task.done?'today':'due');date.textContent=status+' · '+dateLabel(task.dueDate);meta.append(date)}const actions=document.createElement('div');actions.className='actions';const edit=document.createElement('button');edit.type='button';edit.className='secondary';edit.textContent='Edit';edit.onclick=()=>startEdit(index);const del=document.createElement('button');del.type='button';del.className='danger';del.textContent='Delete';del.onclick=()=>{if(!confirm('Delete this task?'))return;tasks.splice(index,1);if(editing===index)resetForm();else if(editing>index)editing--;save();renderAll()};actions.append(edit,del);card.append(head,meta,actions);el('tasks').append(card)}if(!visible.length){const empty=document.createElement('p');empty.className='muted';empty.textContent='No tasks here yet.';el('tasks').append(empty)}}
-function renderAll(){renderDashboard();renderTasks()}
+function googleCalendarUrl(t){
+  // All-day calendar event on the task due date. Google Calendar opens a
+  // pre-filled event for the user to review and save; no automatic syncing.
+  const start=t.dueDate.replaceAll('-','');
+  const d=new Date(Number(t.dueDate.slice(0,4)),Number(t.dueDate.slice(5,7))-1,Number(t.dueDate.slice(8,10))+1);
+  const end=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+  const params=new URLSearchParams({action:'TEMPLATE',text:t.text,dates:start+'/'+end,details:'Task Tracker | Category: '+t.category+' | Priority: '+t.priority});
+  return 'https://calendar.google.com/calendar/render?'+params.toString();
+}
+function renderReminders(){
+  const today=todayLocal();const tomorrowDate=new Date();tomorrowDate.setHours(12,0,0,0);tomorrowDate.setDate(tomorrowDate.getDate()+1);
+  const tomorrow=`${tomorrowDate.getFullYear()}-${String(tomorrowDate.getMonth()+1).padStart(2,'0')}-${String(tomorrowDate.getDate()).padStart(2,'0')}`;
+  const due=tasks.filter(t=>!t.done&&t.dueDate).sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
+  const overdue=due.filter(t=>t.dueDate<today),todayTasks=due.filter(t=>t.dueDate===today),tomorrowTasks=due.filter(t=>t.dueDate===tomorrow),later=due.filter(t=>t.dueDate>tomorrow);
+  el('reminderSummary').textContent=`${overdue.length} overdue · ${todayTasks.length} due today · ${tomorrowTasks.length} due tomorrow`;
+  const root=el('reminderList');root.replaceChildren();
+  if(!due.length){const empty=document.createElement('p');empty.className='muted';empty.textContent='No outstanding tasks with deadlines. Add a due date to see reminders here.';root.append(empty);return}
+  for(const [heading,group] of [['Overdue',overdue],['Due today',todayTasks],['Due tomorrow',tomorrowTasks],['Coming up',later]]){
+    if(!group.length)continue;const section=document.createElement('div');section.className='reminder-group';const h=document.createElement('h3');h.textContent=heading+' ('+group.length+')';section.append(h);
+    for(const t of group){const item=document.createElement('div');item.className='reminder-item';const name=document.createElement('strong');name.textContent=t.text;const detail=document.createElement('p');detail.textContent=dateLabel(t.dueDate)+' · '+t.category+' · '+t.priority+' priority';const link=document.createElement('a');link.className='calendar-btn';link.href=googleCalendarUrl(t);link.target='_blank';link.rel='noopener noreferrer';link.textContent='Add to Google Calendar';link.setAttribute('aria-label','Add '+t.text+' to Google Calendar');item.append(name,detail,link);section.append(item)}root.append(section)
+  }
+}
+function renderAll(){renderDashboard();renderTasks();renderReminders()}
 el('taskForm').onsubmit=e=>{e.preventDefault();const text=el('taskText').value.trim();if(!text)return;const data={text,category:el('category').value,priority:el('priority').value,dueDate:el('dueDate').value};if(editing>=0){tasks[editing]={...tasks[editing],...data}}else tasks.push({...data,done:false});resetForm();save();renderAll()};
 el('cancelEdit').onclick=resetForm;
 el('addCategory').onclick=()=>{const name=el('newCategory').value.trim();if(!name)return;if(categories.some(c=>c.toLowerCase()===name.toLowerCase())){alert('That category already exists.');return}categories.push(name);save();renderCategories();el('category').value=name;el('newCategory').value='';renderAll()};
@@ -80,7 +109,7 @@ renderCategories();save();renderAll();
 
 // VERSION 5: Backup and restore. Keep this AFTER the existing V4 setup.
 el('exportBackup').onclick=()=>{
-  const backup={app:'my-first-ai-app',version:5,exportedAt:new Date().toISOString(),tasks,categories};
+  const backup={app:'my-first-ai-app',version:6,exportedAt:new Date().toISOString(),tasks,categories};
   const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob),link=document.createElement('a');
   link.href=url;link.download='task-tracker-backup-'+todayLocal()+'.json';
