@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,38 +6,264 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>My Task Tracker</title>
 <style>
-:root{color-scheme:dark;font-family:Arial,sans-serif}*{box-sizing:border-box}body{margin:0;background:#12151b;color:#f7f8fc;padding:24px 16px}main{max-width:600px;margin:auto}h1{font-size:28px;margin-bottom:8px}p,.muted{color:#aab1bf}form,.panel{background:#202530;border-radius:14px;padding:16px;margin:18px 0}.field{margin-bottom:12px}label{display:block;margin-bottom:7px;font-size:14px;color:#d5d9e3}input,select{width:100%;background:#12151b;color:#fff;border:1px solid #485064;border-radius:9px;padding:12px;font-size:16px}button{border:0;border-radius:9px;background:#91a0ff;color:#10121a;font-weight:700;padding:11px 14px;cursor:pointer}button.secondary{background:#343c4d;color:#fff}button.danger{background:#503039;color:#fff}.row{display:flex;gap:9px;align-items:center}.row>*{min-width:0}.row input{flex:1}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.task{background:#202530;border-radius:12px;padding:14px;margin:10px 0}.task-head{display:flex;gap:10px;align-items:center}.task-title{flex:1;overflow-wrap:anywhere}.task.done .task-title{text-decoration:line-through;color:#aab1bf}.meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.chip{border-radius:20px;padding:5px 9px;background:#353e51;font-size:12px}.high{background:#673840}.medium{background:#5b4a2b}.low{background:#285143}.task-head input{width:19px;height:19px;flex:none;accent-color:#91a0ff}.task-head button{padding:7px 10px}.filters{display:flex;align-items:center;justify-content:space-between;gap:10px}.filters select{width:auto;max-width:65%}.hint{font-size:12px;line-height:1.5}.sr-only{position:absolute;left:-9999px}@media(max-width:360px){.grid{grid-template-columns:1fr}}
+:root{color-scheme:dark;font-family:Arial,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:#12151b;color:#f7f8fc;padding:24px 16px}
+main{max-width:600px;margin:auto}
+h1{font-size:28px;margin-bottom:8px}
+p,.muted{color:#aab1bf}
+form,.panel{background:#202530;border-radius:14px;padding:16px;margin:18px 0}
+.field{margin-bottom:12px}
+label{display:block;margin-bottom:7px;font-size:14px;color:#d5d9e3}
+input,select{width:100%;background:#12151b;color:#fff;border:1px solid #485064;border-radius:9px;padding:12px;font-size:16px}
+button{border:0;border-radius:9px;background:#91a0ff;color:#10121a;font-weight:700;padding:11px 14px;cursor:pointer}
+button.danger{background:#503039;color:#fff}
+.row{display:flex;gap:9px;align-items:center}
+.row>*{min-width:0}
+.row input{flex:1}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.task{background:#202530;border-radius:12px;padding:14px;margin:10px 0}
+.task-head{display:flex;gap:10px;align-items:center}
+.task-title{flex:1;overflow-wrap:anywhere}
+.task.done .task-title{text-decoration:line-through;color:#aab1bf}
+.meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.chip{border-radius:20px;padding:5px 9px;background:#353e51;font-size:12px}
+.high{background:#673840}
+.medium{background:#5b4a2b}
+.low{background:#285143}
+.task-head input{width:19px;height:19px;flex:none;accent-color:#91a0ff}
+.task-head button{padding:7px 10px}
+.filters{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.filters select{width:auto;max-width:65%}
+.hint{font-size:12px;line-height:1.5}
+.overdue{background:#74343e;color:#fff}
+.today{background:#57508a;color:#fff}
+.due{background:#304b68;color:#fff}
+.sortrow{display:flex;align-items:center;gap:9px;margin:12px 0}
+.sortrow label{margin:0;white-space:nowrap}
+.sortrow select{flex:1;min-width:0}
+.task.overdue-card{border:1px solid #a34c5b}
+@media(max-width:360px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
-<body><main>
-<h1>My Task Tracker</h1><p>Organise your tasks, your way.</p>
+<body>
+<main>
+<h1>My Task Tracker</h1>
+<p>Organise your tasks, your way.</p>
 <form id="taskForm">
-<div class="field"><label for="taskText">New task</label><input id="taskText" placeholder="What needs doing?" maxlength="160" required></div>
+<div class="field">
+<label for="taskText">New task</label>
+<input id="taskText" placeholder="What needs doing?" maxlength="160" required>
+</div>
 <div class="grid">
-<div class="field"><label for="category">Category</label><select id="category"></select></div>
-<div class="field"><label for="priority">Priority</label><select id="priority"><option>Medium</option><option>High</option><option>Low</option></select></div>
-</div><button type="submit">Add task</button>
+<div class="field">
+<label for="category">Category</label>
+<select id="category"></select>
+</div>
+<div class="field">
+<label for="priority">Priority</label>
+<select id="priority">
+<option>Medium</option>
+<option>High</option>
+<option>Low</option>
+</select>
+</div>
+</div>
+<div class="field">
+<label for="dueDate">Due date (optional)</label>
+<input id="dueDate" type="date">
+</div>
+<button type="submit">Add task</button>
 </form>
-<section class="panel"><label for="newCategory">Create your own category</label><div class="row"><input id="newCategory" maxlength="35" placeholder="e.g. Finance"><button id="addCategory" type="button">Create</button></div><p class="hint">Categories stay saved in this browser. You can create as many as you need.</p></section>
-<section aria-label="Task list"><div class="filters"><h2>My tasks</h2><select id="filter" aria-label="Filter tasks by category"></select></div><p class="muted" id="count"></p><div id="tasks"></div></section>
+<section class="panel">
+<label for="newCategory">Create your own category</label>
+<div class="row">
+<input id="newCategory" maxlength="35" placeholder="e.g. Finance">
+<button id="addCategory" type="button">Create</button>
+</div>
+<p class="hint">Categories stay saved in this browser. You can create as many as you need.</p>
+</section>
+<section aria-label="Task list">
+<div class="filters">
+<h2>My tasks</h2>
+<select id="filter" aria-label="Filter tasks by category"></select>
+</div>
+<p class="muted" id="count"></p>
+<div class="sortrow">
+<label for="sort">Sort tasks</label>
+<select id="sort">
+<option value="added">Date added</option>
+<option value="due">Due date (soonest first)</option>
+<option value="priority">Priority (highest first)</option>
+</select>
+</div>
+<div id="tasks"></div>
+</section>
 </main>
 <script>
 'use strict';
-const KEY='tasks'; // Same storage key as your first app: preserves existing tasks.
+const KEY='tasks';
 const CATEGORY_KEY='taskCategoriesV2';
-function read(key,fallback){try{const value=JSON.parse(localStorage.getItem(key));return Array.isArray(value)?value:fallback}catch{return fallback}}
-let tasks=read(KEY,[]).filter(t=>t&&typeof t.text==='string').map(t=>({text:t.text,done:!!t.done,category:typeof t.category==='string'&&t.category.trim()?t.category:'General',priority:['High','Medium','Low'].includes(t.priority)?t.priority:'Medium'}));
-let categories=read(CATEGORY_KEY,['General','Work','Personal','Gym']).filter(c=>typeof c==='string'&&c.trim());
-for(const t of tasks)if(!categories.includes(t.category))categories.push(t.category);
+function read(key,fallback){
+try{
+const value=JSON.parse(localStorage.getItem(key));
+return Array.isArray(value)?value:fallback
+}catch{return fallback}
+}
+let tasks=read(KEY,[])
+.filter(t=>t&&typeof t.text==='string')
+.map(t=>({
+text:t.text,
+done:!!t.done,
+category:typeof t.category==='string'&&t.category.trim()?t.category:'General',
+priority:['High','Medium','Low'].includes(t.priority)?t.priority:'Medium',
+dueDate:typeof t.dueDate==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(t.dueDate)?t.dueDate:''
+}));
+let categories=read(CATEGORY_KEY,['General','Work','Personal','Gym'])
+.filter(c=>typeof c==='string'&&c.trim());
+for(const t of tasks){
+if(!categories.includes(t.category))categories.push(t.category);
+}
 if(!categories.length)categories=['General'];
 const el=id=>document.getElementById(id);
-function save(){localStorage.setItem(KEY,JSON.stringify(tasks));localStorage.setItem(CATEGORY_KEY,JSON.stringify(categories));}
-function option(value){const o=document.createElement('option');o.value=value;o.textContent=value;return o}
-function renderCategories(){const selected=el('category').value;const filtered=el('filter').value;el('category').replaceChildren(...categories.map(option));el('category').value=categories.includes(selected)?selected:categories[0];el('filter').replaceChildren(option('All categories'),...categories.map(option));el('filter').value=filtered==='All categories'||categories.includes(filtered)?filtered:'All categories'}
-function renderTasks(){const filter=el('filter').value;const visible=tasks.map((task,index)=>({task,index})).filter(({task})=>filter==='All categories'||task.category===filter);el('tasks').replaceChildren();el('count').textContent=`${tasks.filter(t=>!t.done).length} outstanding · ${tasks.filter(t=>t.done).length} completed`;
-for(const {task,index} of visible){const card=document.createElement('article');card.className='task'+(task.done?' done':'');const head=document.createElement('div');head.className='task-head';const check=document.createElement('input');check.type='checkbox';check.checked=task.done;check.setAttribute('aria-label','Complete '+task.text);check.onchange=()=>{tasks[index].done=check.checked;save();renderTasks()};const name=document.createElement('span');name.className='task-title';name.textContent=task.text;const del=document.createElement('button');del.type='button';del.className='danger';del.textContent='×';del.setAttribute('aria-label','Delete '+task.text);del.onclick=()=>{tasks.splice(index,1);save();renderTasks()};head.append(check,name,del);const meta=document.createElement('div');meta.className='meta';const cat=document.createElement('span');cat.className='chip';cat.textContent=task.category;const priority=document.createElement('span');priority.className='chip '+task.priority.toLowerCase();priority.textContent=task.priority+' priority';meta.append(cat,priority);card.append(head,meta);el('tasks').append(card)}if(!visible.length){const empty=document.createElement('p');empty.className='muted';empty.textContent='No tasks here yet.';el('tasks').append(empty)}}
-el('taskForm').onsubmit=e=>{e.preventDefault();const text=el('taskText').value.trim();if(!text)return;tasks.push({text,done:false,category:el('category').value,priority:el('priority').value});el('taskText').value='';save();renderTasks()};
-el('addCategory').onclick=()=>{const name=el('newCategory').value.trim();if(!name)return;if(categories.some(c=>c.toLowerCase()===name.toLowerCase())){alert('That category already exists.');return}categories.push(name);save();renderCategories();el('category').value=name;el('newCategory').value='';renderTasks()};
+function save(){
+localStorage.setItem(KEY,JSON.stringify(tasks));
+localStorage.setItem(CATEGORY_KEY,JSON.stringify(categories));
+}
+function option(value){
+const o=document.createElement('option');
+o.value=value;
+o.textContent=value;
+return o;
+}
+function renderCategories(){
+const selected=el('category').value;
+const filtered=el('filter').value;
+el('category').replaceChildren(...categories.map(option));
+el('category').value=categories.includes(selected)?selected:categories[0];
+el('filter').replaceChildren(option('All categories'),...categories.map(option));
+el('filter').value=filtered==='All categories'||categories.includes(filtered)?filtered:'All categories';
+}
+function todayLocal(){
+const d=new Date();
+return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function dateLabel(value){
+const [y,m,d]=value.split('-').map(Number);
+return new Date(y,m-1,d).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
+}
+function renderTasks(){
+const filter=el('filter').value;
+const sort=el('sort').value;
+const today=todayLocal();
+const visible=tasks.map((task,index)=>({task,index}))
+.filter(({task})=>filter==='All categories'||task.category===filter);
+if(sort==='due'){
+visible.sort((a,b)=>
+(a.task.done-b.task.done)||
+(a.task.dueDate||'9999-12-31').localeCompare(b.task.dueDate||'9999-12-31')||
+(a.index-b.index));
+}
+if(sort==='priority'){
+const rank={High:0,Medium:1,Low:2};
+visible.sort((a,b)=>
+(a.task.done-b.task.done)||
+(rank[a.task.priority]-rank[b.task.priority])||
+(a.index-b.index));
+}
+el('tasks').replaceChildren();
+const overdueCount=tasks.filter(t=>!t.done&&t.dueDate&&t.dueDate<today).length;
+el('count').textContent=`${tasks.filter(t=>!t.done).length} outstanding · ${tasks.filter(t=>t.done).length} completed · ${overdueCount} overdue`;
+for(const {task,index} of visible){
+const isOverdue=!task.done&&task.dueDate&&task.dueDate<today;
+const card=document.createElement('article');
+card.className='task'+(task.done?' done':'')+(isOverdue?' overdue-card':'');
+const head=document.createElement('div');
+head.className='task-head';
+const check=document.createElement('input');
+check.type='checkbox';
+check.checked=task.done;
+check.setAttribute('aria-label','Complete '+task.text);
+check.onchange=()=>{
+tasks[index].done=check.checked;
+save();
+renderTasks();
+};
+const name=document.createElement('span');
+name.className='task-title';
+name.textContent=task.text;
+const del=document.createElement('button');
+del.type='button';
+del.className='danger';
+del.textContent='×';
+del.setAttribute('aria-label','Delete '+task.text);
+del.onclick=()=>{
+tasks.splice(index,1);
+save();
+renderTasks();
+};
+head.append(check,name,del);
+const meta=document.createElement('div');
+meta.className='meta';
+const cat=document.createElement('span');
+cat.className='chip';
+cat.textContent=task.category;
+const priority=document.createElement('span');
+priority.className='chip '+task.priority.toLowerCase();
+priority.textContent=task.priority+' priority';
+meta.append(cat,priority);
+if(task.dueDate){
+const date=document.createElement('span');
+const status=task.done?'Due':isOverdue?'Overdue':task.dueDate===today?'Due today':'Due';
+date.className='chip '+(isOverdue?'overdue':task.dueDate===today&&!task.done?'today':'due');
+date.textContent=status+' · '+dateLabel(task.dueDate);
+meta.append(date);
+}
+card.append(head,meta);
+el('tasks').append(card);
+}
+if(!visible.length){
+const empty=document.createElement('p');
+empty.className='muted';
+empty.textContent='No tasks here yet.';
+el('tasks').append(empty);
+}
+}
+el('taskForm').onsubmit=e=>{
+e.preventDefault();
+const text=el('taskText').value.trim();
+if(!text)return;
+tasks.push({
+text,
+done:false,
+category:el('category').value,
+priority:el('priority').value,
+dueDate:el('dueDate').value
+});
+el('taskText').value='';
+el('dueDate').value='';
+save();
+renderTasks();
+};
+el('addCategory').onclick=()=>{
+const name=el('newCategory').value.trim();
+if(!name)return;
+if(categories.some(c=>c.toLowerCase()===name.toLowerCase())){
+alert('That category already exists.');
+return;
+}
+categories.push(name);
+save();
+renderCategories();
+el('category').value=name;
+el('newCategory').value='';
+renderTasks();
+};
 el('filter').onchange=renderTasks;
-renderCategories();save();renderTasks();
-</script></body></html>
+el('sort').onchange=renderTasks;
+renderCategories();
+save();
+renderTasks();
+</script>
+</body>
+</html>
